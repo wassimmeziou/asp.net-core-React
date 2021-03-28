@@ -9,7 +9,6 @@ export default class ActivityStore {
   editMode: boolean = false;
   loading: boolean = false;
   loadingInitial: boolean = true;
-  submitting: boolean = false;
 
   constructor() {
     makeAutoObservable(this);
@@ -21,12 +20,13 @@ export default class ActivityStore {
       (a, b) => Date.parse(b.date) - Date.parse(a.date)
     );
   }
+
   loadActivities = async () => {
+    this.setLoadingInitial(true);
     try {
       const activities = await agent.Activities.List();
       activities.forEach((a) => {
-        a.date = a.date.split("T")[0];
-        this.activities.set(a.id, a);
+        this.setActivity(a);
       });
       this.setLoadingInitial(false);
     } catch (error) {
@@ -35,33 +35,59 @@ export default class ActivityStore {
     }
   };
 
+  loadActivity = async (id: string) => {
+    let activity = this.getActivity(id);
+    if (activity) {
+      this.selectedActivity = activity;
+    } else {
+      this.setLoadingInitial(true);
+      try {
+        activity = await agent.Activities.Details(id);
+        this.setActivity(activity);
+        // runInAction(()=>{
+        this.selectedActivity = activity;
+        //  });
+
+        this.setLoadingInitial(false);
+      } catch (error) {
+        console.log(error);
+        this.setLoadingInitial(false);
+      }
+    }
+    return activity;
+  };
+
+  private setActivity = (a: Activity) => {
+    a.date = a.date.split("T")[0];
+    this.activities.set(a.id, a);
+  };
+
+  private getActivity = (id: string) => {
+    return this.activities.get(id);
+  };
+
   setLoadingInitial = (state: boolean) => {
     this.loadingInitial = state;
   };
 
-  selectActivity = (id: string) => {
-    this.selectedActivity = this.activities.get(id);
-  };
+  // selectActivity = (id: string) => {
+  //   this.selectedActivity = this.activities.get(id);
+  // };
 
-  cancelSelectedActivity = () => {
-    this.selectedActivity = undefined;
-  };
+  // cancelSelectedActivity = () => {
+  //   this.selectedActivity = undefined;
+  // };
 
-  openForm = (id?: string) => {
-    id ? this.selectActivity(id) : this.cancelSelectedActivity();
-    this.editMode = true;
-  };
+  // openForm = (id?: string) => {
+  //   id ? this.selectActivity(id) : this.cancelSelectedActivity();
+  //   this.editMode = true;
+  // };
 
-  closeForm = () => {
-    this.editMode = false;
-  };
-
-  setsubmitting = (state: boolean) => {
-    this.submitting = state;
-  };
+  // closeForm = () => {
+  //   this.editMode = false;
+  // };
 
   editOrCreate = async (activity: Activity) => {
-    //this.setsubmitting(true);
     this.loading = true;
     if (activity.id) {
       try {
@@ -77,8 +103,6 @@ export default class ActivityStore {
           this.loading = false;
         });
       }
-
-      //this.setsubmitting(false);
     } else {
       activity.id = uuid();
       try {
@@ -93,7 +117,6 @@ export default class ActivityStore {
       runInAction(() => {
         this.loading = false;
       });
-      // this.setsubmitting(false);
     }
   };
 
@@ -104,7 +127,7 @@ export default class ActivityStore {
       runInAction(() => {
         this.activities.delete(id);
         //  = [...this.activities.filter((a) => a.id !== id)];
-        if (this.selectedActivity?.id === id) this.cancelSelectedActivity();
+        // if (this.selectedActivity?.id === id) this.cancelSelectedActivity();
         this.loading = false;
       });
     } catch (error) {

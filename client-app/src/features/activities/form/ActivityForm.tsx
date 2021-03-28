@@ -1,14 +1,17 @@
 import { observer } from 'mobx-react-lite';
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
+import { Link, useHistory, useParams } from 'react-router-dom';
 import { Button, Form, Segment } from 'semantic-ui-react';
+import Loading from '../../../app/layout/Loading';
 import { useStore } from '../../../app/stores/store';
 
 export default observer(function ActivityForm() {
+    const history = useHistory();
 
     const { activityStore } = useStore();
-    const { selectedActivity, closeForm, loading, editOrCreate } = activityStore;
-
-    const initialeState = selectedActivity ?? {
+    const { /*  closeForm, */ loading, editOrCreate, loadActivity } = activityStore;
+    const { id } = useParams<{ id: string }>();
+    const [activity, setActivity] = useState({
         id: '',
         category: '',
         city: '',
@@ -16,18 +19,27 @@ export default observer(function ActivityForm() {
         description: '',
         title: '',
         venue: '',
-    };
+    });
 
-    const [activity, setActivity] = useState(initialeState);
+    useEffect(() => {
+        if (id) loadActivity(id).then(act => setActivity(act!)
+
+        )
+    }, [id, loadActivity])
 
     function handleSubmit() {
         editOrCreate(activity);
+        history.push(`/activities/${activity.id}`);
+
     }
 
     function handleOnChangeInput(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
         const { name, value } = event.target;
         setActivity({ ...activity, [name]: value });
 
+
+
+        if (activityStore.loadingInitial) return <Loading content='Loading activity..' />
     }
     return (
 
@@ -40,7 +52,7 @@ export default observer(function ActivityForm() {
                 <Form.Input placeholder='City' value={activity.city} name='city' onChange={handleOnChangeInput} />
                 <Form.Input placeholder='Venue' value={activity.venue} name='venue' onChange={handleOnChangeInput} />
                 <Button loading={loading} floated='right' positive type='submit' content='Submit' />
-                <Button onClick={closeForm} floated='right' type='button' content='Cancel' />
+                <Button /* onClick={closeForm} */ as={Link} to={"/activities"} floated='right' type='button' content='Cancel' />
             </Form>
         </Segment>
     )
