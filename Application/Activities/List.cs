@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Application.Core;
 using Domain;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -11,20 +12,20 @@ namespace Application.Activities
 {
     public class List
     {
-        public class Query : IRequest<List<Activity>>{}
+        public class Query : IRequest<Result<List<Activity>>> { }
 
-        public class Handler : IRequestHandler<Query,List<Activity>>
+        public class Handler : IRequestHandler<Query, Result<List<Activity>>>
         {
             private readonly DataContext _context;
             // private readonly ILogger logger;
 
-            public Handler(DataContext context,ILogger<List> logger)
+            public Handler(DataContext context, ILogger<List> logger)
             {
                 this._context = context;
                 // this.logger = logger;
             }
 
-            public async Task<List<Activity>> Handle(Query request, CancellationToken cancellationToken)
+            public async Task<Result<List<Activity>>> Handle(Query request, CancellationToken cancellationToken)
             {
                 /* try
                 {
@@ -33,15 +34,13 @@ namespace Application.Activities
                         cancellationToken.ThrowIfCancellationRequested();
                         await Task.Delay(1000, cancellationToken);
                         logger.LogInformation($"Task {i} completed");
-
-
                     }
                 }
                 catch (System.Exception ex) when (ex is TaskCanceledException)
                 {
                     logger.LogInformation($"Task was canceled");
                 } */
-                 return await _context.Activities.ToListAsync(/* cancellationToken */);
+                return Result<List<Activity>>.Success(await _context.Activities.ToListAsync(/* cancellationToken */));
             }
         }
     }
