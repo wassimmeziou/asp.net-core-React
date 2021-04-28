@@ -15,7 +15,7 @@ axios.defaults.baseURL = "http://localhost:5000/api";
 axios.interceptors.response.use(
   async (response) => {
     // try {
-    await sleep(1000);
+    await sleep(2000);
     return response;
     // } catch (error) {
     //   return await Promise.reject(error);
@@ -28,7 +28,7 @@ axios.interceptors.response.use(
         if (typeof err.data === 'string') {
           toast.error(err.data);
         }
-        if (err.config.method == "get" && err.data.errors.hasOwnProperty("id")) {
+        if (err.config.method === "get" && err.data.errors.hasOwnProperty("id")) {
           history.push("/not-found");
         }
         if (err.data.errors) {
@@ -46,7 +46,6 @@ axios.interceptors.response.use(
       case 404:
         toast.error("not found");
         break;
-
       case 200:
         toast.done("added");
         break;

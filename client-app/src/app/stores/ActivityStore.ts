@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import { makeAutoObservable, runInAction } from "mobx";
 import { v4 as uuid } from "uuid";
 import agent from "../api/agent";
@@ -8,7 +9,7 @@ export default class ActivityStore {
   selectedActivity: Activity | undefined = undefined;
   editMode: boolean = false;
   loading: boolean = false;
-  loadingInitial: boolean = true;
+  loadingInitial: boolean = false;
 
   constructor() {
     makeAutoObservable(this);
@@ -17,14 +18,14 @@ export default class ActivityStore {
 
   get activitiesByDate() {
     return Array.from(this.activities.values()).sort(
-      (a, b) => Date.parse(b.date) - Date.parse(a.date)
+      (a, b) => b.date!.getTime() -a.date!.getTime()
     );
   }
 
   get groupActivities() {
     return Object.entries(
       this.activitiesByDate.reduce((activities, activity) => {
-        const date = activity.date;
+        const date = format( activity.date!,'dd MMM yyyy h:mm aa');
         activities[date] = activities[date]
           ? activities[date].concat(activity) // [...activities[date], activity]
           : [activity];
@@ -56,9 +57,9 @@ export default class ActivityStore {
       try {
         activity = await agent.Activities.Details(id);
         this.setActivity(activity);
-        // runInAction(()=>{
+         runInAction(()=>{
         this.selectedActivity = activity;
-        //  });
+          });
 
         this.setLoadingInitial(false);
       } catch (error) {
@@ -70,7 +71,8 @@ export default class ActivityStore {
   };
 
   private setActivity = (a: Activity) => {
-    a.date = a.date.split("T")[0];
+    //a.date = a.date.split("T")[0];
+    a.date = new Date(a.date!);
     this.activities.set(a.id, a);
   };
 

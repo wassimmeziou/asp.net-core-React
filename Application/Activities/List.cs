@@ -40,7 +40,8 @@ namespace Application.Activities
                 {
                     logger.LogInformation($"Task was canceled");
                 } */
-                return Result<List<Activity>>.Success(await _context.Activities.ToListAsync(/* cancellationToken */));
+                var res = Result<List<Activity>>.Success(await _context.Activities.ToListAsync(/* cancellationToken */));
+                return res;
             }
         }
     }
