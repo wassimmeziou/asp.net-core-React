@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Application.Activities;
 using Domain;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -13,7 +14,7 @@ namespace API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetActivities(/* CancellationToken ct */)
         {
-            return HandleResult( await Mediator.Send(new List.Query()/* ,ct */));
+            return HandleResult(await Mediator.Send(new List.Query()/* ,ct */));
         }
 
         [HttpGet("{id}")]
