@@ -2,7 +2,7 @@ import { format } from "date-fns";
 import { makeAutoObservable, runInAction } from "mobx";
 import { v4 as uuid } from "uuid";
 import agent from "../api/agent";
-import { Activity } from "./../models/activity";
+import { Activity } from "../models/activity";
 
 export default class ActivityStore {
   activities = new Map<string, Activity>();

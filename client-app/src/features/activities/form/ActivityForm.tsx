@@ -35,11 +35,10 @@ export default observer(function ActivityForm() {
         venue: Yup.string().required("venue is mandatory!"),
         city: Yup.string().required("city is mandatory!"),
         date: Yup.string().required("date is mandatory!").nullable(),
-    })
-    useEffect(() => {
-        if (id) loadActivity(id).then(act => setActivity(act!)
+    });
 
-        )
+    useEffect(() => {
+        if (id) loadActivity(id).then(act => setActivity(act!))
     }, [id, loadActivity])
 
     function handleFormSubmit(activity: Activity) {

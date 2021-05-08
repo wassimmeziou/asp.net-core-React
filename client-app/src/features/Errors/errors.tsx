@@ -2,7 +2,7 @@
 import axios from 'axios';
 import React, { useState } from 'react';
 import { Button, Header, Segment } from "semantic-ui-react";
-import ValidationEroors from './validationErrors';
+import ValidationErrors from './validationErrors';
 
 export default function TestErrors() {
     const baseUrl = 'http://localhost:5000/api/'
@@ -47,7 +47,7 @@ export default function TestErrors() {
             </Segment>
             {errors &&
 
-                <ValidationEroors errors={errors} />}
+                <ValidationErrors errors={errors} />}
         </>
     )
 }
