@@ -17,17 +17,17 @@ export default observer(function RegisterForm() {
                 // /^.*(?=.{8,})((?=.*[!@#$%^&*()\-_=+{};:,<.>]){1})(?=.*\d)((?=.*[a-z]){1})((?=.*[A-Z]){1}).*$/,
                 /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{4,8}$/,
                 "Password must contain at least 4 up to 8 characters, one uppercase, one lowercare and one number"
-            )
-        // confirmPassword: Yup
-        //   .string()
-        //   .required("Please confirm your password")
-        //   .oneOf([Yup.ref('password'), null], "Passwords don't match.")
+            ),
+        confirmPassword: Yup
+          .string()
+          .required("Please confirm your password")
+          .oneOf([Yup.ref('password'), null], "Passwords don't match.")
     });
 
 
     return (
         <Formik
-            initialValues={{ displayName: '', userName: '', email: '', password: '', error: null }}
+            initialValues={{confirmPassword:'', displayName: '', userName: '', email: '', password: '', error: null }}
             onSubmit={(values, { setErrors }) => userStore.register(values).catch(error =>
                 setErrors({ error }))}
             validationSchema={validationSchema}
@@ -40,6 +40,8 @@ export default observer(function RegisterForm() {
                     <MyTextInput name="userName" placeholder="UserName" />
                     <MyTextInput name="email" placeholder="Email" />
                     <MyTextInput name="password" placeholder="Password" type="password" />
+                    <MyTextInput name="confirmPassword" placeholder="Re-tape Password" type="password" />
+
                     <ErrorMessage
                         name='error'
                         render={() =>

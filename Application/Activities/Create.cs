@@ -1,9 +1,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Core;
+using Application.Interfaces;
 using Domain;
 using FluentValidation;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Persistence;
 
 namespace Application.Activities
@@ -12,6 +14,11 @@ namespace Application.Activities
     {
         public class Command : IRequest<Result<Unit>>
         {
+            // public Command(Activity activity)
+            // {
+            //     this.Activity = activity;
+
+            // }
             public Activity Activity { get; set; }
         }
 
@@ -26,27 +33,38 @@ namespace Application.Activities
 
         public class Handler : IRequestHandler<Command, Result<Unit>>
         {
-            private readonly DataContext context;
+            private readonly DataContext _context;
+            private readonly IUserAccessor _userAccessor;
 
-            public Handler(DataContext context)
+            public Handler(DataContext context, IUserAccessor userAccessor)
             {
-                this.context = context;
+                this._context = context;
+                this._userAccessor = userAccessor;
             }
 
             public async Task<Result<Unit>> Handle(Command request, CancellationToken cancellationToken)
             {
                 try
                 {
-                     context.Activities.Add(request.Activity);
-                var res = await context.SaveChangesAsync() > 0;
-                if (res)
-                    return Result<Unit>.Success(Unit.Value);
-                else
-                    return Result<Unit>.Failure("Failed to create activity");
+                    var currentUser = await _context.Users.FirstOrDefaultAsync(u => 
+                    u.UserName == _userAccessor.GetUserName());
+                    ActivityAttendee activityAttendee = new ActivityAttendee
+                    {
+                        Activity = request.Activity,
+                        AppUser = currentUser,
+                        IsHost = true,
+                    };
+                    _context.ActivityAttendees.Add(activityAttendee);
+                    _context.Activities.Add(request.Activity);
+                    var res = await _context.SaveChangesAsync() > 0;
+                    if (res)
+                        return Result<Unit>.Success(Unit.Value);
+                    else
+                        return Result<Unit>.Failure("Failed to create activity");
                 }
                 catch (System.Exception e)
                 {
-                   return Result<Unit>.Failure(e.InnerException ==null ?e.Message: e.InnerException.Message);
+                    return Result<Unit>.Failure(e.InnerException == null ? e.Message : e.InnerException.Message);
                 }
             }
         }
